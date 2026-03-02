@@ -1,0 +1,25 @@
+{
+  "name": "HTML to Figma Design",
+  "id": "html-to-figma-design",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "editorType": [
+    "figma"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://*.ngrok-free.app",
+      "https://*.ngrok.io",
+      "https://*.ngrok.app",
+      "http://localhost:3005",
+      "https://*.ngrok.dev",
+      "https://5176-103-175-180-126.ngrok-free.app",
+      "https://generativelanguage.googleapis.com"
+    ],
+    "devAllowedDomains": [
+      "http://localhost",
+      "https://localhost"
+    ],
+    "reasoning": "Required for local Playwright render server via ngrok, Gemini API (if used later), and localhost testing"
+  }
+}

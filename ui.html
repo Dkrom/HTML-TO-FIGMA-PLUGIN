@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>HTML to Figma</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #0e0e10;
+      --surface: #18181b;
+      --surface2: #222228;
+      --border: rgba(255, 255, 255, 0.07);
+      --accent: #7c6af7;
+      --accent2: #a78bfa;
+      --green: #22d3a0;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --r: 10px;
+    }
+
+    body {
+      font-family: -apple-system, 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(124, 106, 247, .15), rgba(167, 139, 250, .05));
+      flex-shrink: 0
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    .logo {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #7c6af7, #a78bfa);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 0 12px rgba(124, 106, 247, .4);
+      flex-shrink: 0
+    }
+
+    .title-text h1 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.2px
+    }
+
+    .title-text p {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all .3s
+    }
+
+    .badge.online {
+      background: rgba(34, 211, 160, .15);
+      color: var(--green);
+      border: 1px solid rgba(34, 211, 160, .3)
+    }
+
+    .badge.offline {
+      background: rgba(248, 113, 113, .15);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, .3)
+    }
+
+    .badge.checking {
+      background: rgba(251, 191, 36, .15);
+      color: var(--yellow);
+      border: 1px solid rgba(251, 191, 36, .3)
+    }
+
+    .server-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .server-row label {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap
+    }
+
+    .surl {
+      flex: 1;
+      padding: 5px 9px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 11px;
+      font-family: monospace;
+      outline: none;
+      transition: border-color .2s
+    }
+
+    .surl:focus {
+      border-color: var(--accent)
+    }
+
+    .vp-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 6px
+    }
+
+    .vp-row {
+      display: flex;
+      gap: 5px
+    }
+
+    .vp-btn {
+      flex: 1;
+      padding: 5px 2px;
+      text-align: center;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 9.5px;
+      cursor: pointer;
+      transition: all .2s;
+      line-height: 1.4
+    }
+
+    .vp-btn .ic {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 1px
+    }
+
+    .vp-btn:hover {
+      border-color: rgba(124, 106, 247, .4);
+      color: var(--text)
+    }
+
+    .vp-btn.active {
+      border-color: var(--accent);
+      background: rgba(124, 106, 247, .15);
+      color: var(--accent2);
+      font-weight: 700
+    }
+
+    .body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 14px;
+      overflow: hidden;
+      min-height: 0;
+      gap: 8px
+    }
+
+    .status {
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .3s
+    }
+
+    .status::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .status.idle {
+      background: rgba(113, 113, 122, .15);
+      color: var(--muted)
+    }
+
+    .status.idle::before {
+      background: var(--muted)
+    }
+
+    .status.info {
+      background: rgba(124, 106, 247, .12);
+      color: var(--accent2)
+    }
+
+    .status.info::before {
+      background: var(--accent);
+      animation: pulse 1s infinite
+    }
+
+    .status.ok {
+      background: rgba(34, 211, 160, .12);
+      color: var(--green)
+    }
+
+    .status.ok::before {
+      background: var(--green)
+    }
+
+    .status.err {
+      background: rgba(248, 113, 113, .12);
+      color: var(--red)
+    }
+
+    .status.err::before {
+      background: var(--red)
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .opts {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      user-select: none
+    }
+
+    .chip:hover {
+      border-color: rgba(124, 106, 247, .4);
+      color: var(--text)
+    }
+
+    .chip.on {
+      background: rgba(124, 106, 247, .12);
+      border-color: var(--accent);
+      color: var(--accent2)
+    }
+
+    .ed {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0
+    }
+
+    .ed-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .cc {
+      font-size: 9px;
+      font-family: monospace;
+      color: var(--muted)
+    }
+
+    textarea {
+      flex: 1;
+      min-height: 0;
+      resize: none;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      color: var(--text);
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+      line-height: 1.6;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color .2s
+    }
+
+    textarea:focus {
+      border-color: var(--accent)
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+      font-style: italic
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0
+    }
+
+    .btn-main {
+      flex: 1;
+      padding: 11px;
+      background: linear-gradient(135deg, #7c6af7, #a78bfa);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(124, 106, 247, .35);
+      transition: all .2s
+    }
+
+    .btn-main:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(124, 106, 247, .45)
+    }
+
+    .btn-main:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none
+    }
+
+    .btn-clr {
+      padding: 11px 14px;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .btn-clr:hover {
+      color: var(--text)
+    }
+
+    .prog-wrap {
+      flex-shrink: 0
+    }
+
+    .prog-track {
+      height: 3px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden
+    }
+
+    .prog-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #7c6af7, #a78bfa);
+      border-radius: 2px;
+      transition: width .4s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .prog-lbl {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      font-size: 9px;
+      color: var(--muted)
+    }
+
+    .log-wrap {
+      flex-shrink: 0
+    }
+
+    .log-hdr {
+      font-size: 9.5px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .log {
+      height: 60px;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-family: monospace;
+      font-size: 9.5px
+    }
+
+    .log div {
+      padding: 1px 0;
+      line-height: 1.5;
+      color: var(--muted)
+    }
+
+    .log .i {
+      color: #818cf8
+    }
+
+    .log .s {
+      color: var(--green)
+    }
+
+    .log .e {
+      color: var(--red)
+    }
+
+    .log .w {
+      color: var(--yellow)
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="title-row">
+      <div class="logo">✦</div>
+      <div class="title-text">
+        <h1>HTML → Figma</h1>
+        <p>Pixel-perfect design conversion</p>
+      </div>
+      <div style="margin-left:auto">
+        <span class="badge checking" id="badge">checking…</span>
+      </div>
+    </div>
+    <div class="server-row">
+      <label>Server</label>
+      <input class="surl" id="surl" value="http://localhost:3005" type="text" spellcheck="false" />
+    </div>
+    <div class="vp-label">Viewport</div>
+    <div class="vp-row" id="vpRow">
+      <button class="vp-btn" data-w="1920" type="button"><span class="ic">🖥</span>1920</button>
+      <button class="vp-btn active" data-w="1440" type="button"><span class="ic">💻</span>1440</button>
+      <button class="vp-btn" data-w="1024" type="button"><span class="ic">📟</span>1024</button>
+      <button class="vp-btn" data-w="768" type="button"><span class="ic">📱</span>768</button>
+      <button class="vp-btn" data-w="390" type="button"><span class="ic">📱</span>390</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="status idle" id="status">Paste HTML below and click Convert</div>
+
+    <div class="opts">
+      <div class="chip on" id="chip-img">🖼 Fetch Images</div>
+      <div class="chip on" id="chip-svg">✦ SVGs</div>
+    </div>
+
+    <div class="ed">
+      <div class="ed-label">
+        <span>HTML Input</span>
+        <span class="cc" id="cc">0 chars</span>
+      </div>
+      <textarea id="inp"
+        placeholder="Paste your HTML here…&#10;&#10;Supports: Tailwind CSS, Lucide icons, Font Awesome, Google Fonts, inline CSS…"
+        spellcheck="false"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-main" id="btn" type="button">⚡ Convert to Figma</button>
+      <button class="btn-clr" id="btnClr" type="button">✕</button>
+    </div>
+
+    <div class="prog-wrap">
+      <div class="prog-track">
+        <div class="prog-bar" id="pb"></div>
+      </div>
+      <div class="prog-lbl">
+        <span id="pStep"></span>
+        <span id="pPct"></span>
+      </div>
+    </div>
+
+    <div class="log-wrap">
+      <div class="log-hdr">
+        <span>Console</span>
+        <span id="lcount" style="color:var(--green);font-weight:600"></span>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    var statusEl = document.getElementById('status');
+    var logEl = document.getElementById('log');
+    var inp = document.getElementById('inp');
+    var btn = document.getElementById('btn');
+    var btnClr = document.getElementById('btnClr');
+    var surlEl = document.getElementById('surl');
+    var badgeEl = document.getElementById('badge');
+    var pb = document.getElementById('pb');
+    var pStep = document.getElementById('pStep');
+    var pPct = document.getElementById('pPct');
+    var ccEl = document.getElementById('cc');
+    var lcEl = document.getElementById('lcount');
+    var vp = 1440;
+
+    function st(t, c) { statusEl.textContent = t; statusEl.className = 'status ' + (c || 'idle'); }
+
+    function addLog(t, c) {
+      var d = document.createElement('div');
+      var now = new Date();
+      var hh = ('0' + now.getHours()).slice(-2), mm = ('0' + now.getMinutes()).slice(-2), ss = ('0' + now.getSeconds()).slice(-2);
+      d.textContent = '[' + hh + ':' + mm + ':' + ss + '] ' + t;
+      if (c) d.className = c;
+      logEl.appendChild(d);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function prog(p, step) {
+      pb.style.width = p + '%';
+      pPct.textContent = p > 0 ? p + '%' : '';
+      pStep.textContent = step || '';
+    }
+
+    /* Char counter */
+    inp.addEventListener('input', function () { ccEl.textContent = inp.value.length.toLocaleString() + ' chars'; });
+
+    /* Clear */
+    btnClr.addEventListener('click', function () {
+      inp.value = ''; ccEl.textContent = '0 chars';
+      logEl.innerHTML = ''; prog(0, ''); lcEl.textContent = '';
+      st('Paste HTML below and click Convert', 'idle');
+    });
+
+    /* Toggle chips */
+    document.getElementById('chip-img').addEventListener('click', function () { this.classList.toggle('on'); });
+    document.getElementById('chip-svg').addEventListener('click', function () { this.classList.toggle('on'); });
+
+    /* Viewport */
+    document.getElementById('vpRow').addEventListener('click', function (e) {
+      var b = e.target.closest('.vp-btn'); if (!b) return;
+      document.querySelectorAll('.vp-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      vp = parseInt(b.getAttribute('data-w'));
+    });
+
+    /* Server health check — plain XHR, no modern API */
+    function checkServer() {
+      var url = surlEl.value.trim();
+      var x = new XMLHttpRequest();
+      x.open('GET', url + '/health', true);
+      x.timeout = 4000;
+      x.onreadystatechange = function () {
+        if (x.readyState !== 4) return;
+        try {
+          var d = JSON.parse(x.responseText);
+          if (d && d.ok) { badgeEl.textContent = '● online'; badgeEl.className = 'badge online'; }
+          else throw new Error();
+        } catch (e) { badgeEl.textContent = '○ offline'; badgeEl.className = 'badge offline'; }
+      };
+      x.onerror = x.ontimeout = function () { badgeEl.textContent = '○ offline'; badgeEl.className = 'badge offline'; };
+      x.send();
+    }
+    checkServer();
+    setInterval(checkServer, 10000);
+    surlEl.addEventListener('change', checkServer);
+
+    /* Fetch image bytes — XHR instead of fetch() */
+    function fetchImageXHR(url, cb) {
+      var x = new XMLHttpRequest();
+      x.open('GET', url, true);
+      x.responseType = 'arraybuffer';
+      x.timeout = 8000;
+      x.onload = function () {
+        if (x.status >= 200 && x.status < 300) cb(null, x.response);
+        else cb(new Error('HTTP ' + x.status));
+      };
+      x.onerror = x.ontimeout = function () { cb(new Error('Network error')); };
+      x.send();
+    }
+
+    function processImages(nodes, doFetch, cb) {
+      var i = 0;
+      function next() {
+        if (i >= nodes.length) { cb(); return; }
+        var n = nodes[i++];
+        var url = n.type === 'IMAGE' ? n.src : n.bgImage;
+        function afterThis() {
+          if (n.children && n.children.length) processImages(n.children, doFetch, next);
+          else next();
+        }
+        if (url && doFetch) {
+          if (url.startsWith('data:')) {
+            try {
+              var b64 = url.split(',')[1];
+              var bin = atob(b64);
+              var arr = new Uint8Array(bin.length);
+              for (var j = 0; j < bin.length; j++) arr[j] = bin.charCodeAt(j);
+              n.imageBytes = arr;
+              addLog('📷 img (' + Math.round(arr.byteLength / 1024) + 'KB)', 's');
+            } catch (e) { addLog('⚠ data URL failed', 'w'); }
+            afterThis();
+          } else if (url.startsWith('http')) {
+            fetchImageXHR(url, function (err, buf) {
+              if (!err && buf) {
+                n.imageBytes = new Uint8Array(buf);
+                addLog('📷 img (' + Math.round(buf.byteLength / 1024) + 'KB)', 's');
+              } else {
+                addLog('⚠ img failed: ' + url.substring(0, 35), 'w');
+              }
+              afterThis();
+            });
+          } else afterThis();
+        } else afterThis();
+      }
+      next();
+    }
+
+    /* Convert — XHR */
+    btn.addEventListener('click', function () {
+      var html = inp.value.trim();
+      if (!html) { st('Please paste some HTML first', 'err'); return; }
+
+      var url = surlEl.value.trim();
+
+      btn.disabled = true;
+      logEl.innerHTML = '';
+      lcEl.textContent = '';
+      prog(5, 'Sending to server…');
+      st('Rendering HTML in browser…', 'info');
+      addLog('Render start → viewport ' + vp + 'px', 'i');
+
+      var x = new XMLHttpRequest();
+      x.open('POST', url + '/render', true);
+      x.setRequestHeader('Content-Type', 'application/json');
+      x.timeout = 90000;
+      x.onreadystatechange = function () {
+        if (x.readyState !== 4) return;
+        if (x.status >= 200 && x.status < 300) {
+          var data;
+          try { data = JSON.parse(x.responseText); }
+          catch (e) { gotError('Bad JSON from server'); return; }
+
+          var layers = data.layers || data.nodes || [];
+          prog(60, 'Sending to Figma\u2026');
+          st('Processing ' + layers.length + ' layers\u2026', 'info');
+          addLog('\u2713 Extracted ' + layers.length + ' flat layers', 's');
+
+          sendToFigma(data);
+        } else if (x.status === 0) {
+          gotError('Cannot reach server. Is it running?');
+        } else {
+          try { var e = JSON.parse(x.responseText); gotError(e.error || 'HTTP ' + x.status); }
+          catch (e2) { gotError('HTTP ' + x.status); }
+        }
+      };
+      x.onerror = function () { gotError('Network error \u2014 server offline?'); };
+      x.ontimeout = function () { gotError('Timeout \u2014 server took too long'); };
+      x.send(JSON.stringify({ html: html, viewport: vp }));
+    });
+
+    function sendToFigma(data) {
+      prog(80, 'Rendering in Figma\u2026');
+      st('Rendering in Figma canvas\u2026', 'info');
+      addLog('Sending to Figma plugin\u2026', 'i');
+      parent.postMessage({
+        pluginMessage: {
+          type: 'render-tree',
+          layers: data.layers || data.nodes || [],
+          viewport: data.viewport || vp
+        }
+      }, '*');
+    }
+
+    function gotError(msg) {
+      st('Error: ' + msg, 'err');
+      addLog('✗ ' + msg, 'e');
+      btn.disabled = false;
+      prog(0, '');
+    }
+
+    /* Messages from plugin */
+    window.onmessage = function (e) {
+      var m = e.data && e.data.pluginMessage; if (!m) return;
+      if (m.type === 'status') {
+        st(m.text, 'ok');
+        addLog(m.text, 's');
+        btn.disabled = false;
+        prog(100, 'Complete!');
+        setTimeout(function () { prog(0, ''); }, 3000);
+        var match = m.text.match(/(\d+) layer/);
+        if (match) lcEl.textContent = '⬡ ' + parseInt(match[1]).toLocaleString() + ' layers created';
+      }
+      if (m.type === 'error') { gotError(m.text); }
+      if (m.type === 'log') { addLog(m.text, m.cls || 'i'); }
+    };
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+# Logs and generated files
+node_modules/
+dist/
+*.log
+
+# ngrok
+ngrok.exe
+
+# OS
+.DS_Store
+Thumbs.db
